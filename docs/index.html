@@ -129,12 +129,13 @@
             window.addEventListener("message", function (event) {
               if (event.data && event.data.type === "ParentUrlResponse") {
                 const url = event.data.url;
+                console.log("[A] postMessage 受信:", url);
 
                 if (typeof Module !== "undefined" && Module.ccall) {
                   Module.ccall("StoreParentUrl", null, ["string"], [url]);
-                  console.log("[A] StoreParentUrl called with:", url);
+                  console.log("[A] StoreParentUrl を呼び出しました");
                 } else {
-                  console.warn("[A] Module.ccall is not ready yet!");
+                  console.warn("[A] Module.ccall が未定義です");
                 }
               }
             });
