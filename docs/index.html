@@ -112,29 +112,30 @@
       // 以下から追加
       let MyGameInstance = null;
 
+      // script.onload の中を以下のように修正するのが安全です
+
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width =
             100 * progress + "%";
         })
           .then((unityInstance) => {
-            MyGameInstance = unityInstance; // ← ★ここがポイント！
-
             document.querySelector("#unity-loading-bar").style.display = "none";
             document.querySelector("#unity-fullscreen-button").onclick = () => {
               unityInstance.SetFullscreen(1);
             };
 
-            // 🎯 B/Cサイトからメッセージを受け取ったら Unity に渡す
+            // ✅ Unityインスタンスが完全に生成された後に postMessage リスナー登録
             window.addEventListener("message", function (event) {
               if (event.data && event.data.type === "ParentUrlResponse") {
                 const url = event.data.url;
-                // Unity内の"UrlReceiver"オブジェクトのOnReceiveParentUrlメソッドへ送る
-                MyGameInstance.SendMessage(
-                  "UrlReceiver",
-                  "OnReceiveParentUrl",
-                  url
-                );
+
+                if (typeof Module !== "undefined" && Module.ccall) {
+                  Module.ccall("StoreParentUrl", null, ["string"], [url]);
+                  console.log("[A] StoreParentUrl called with:", url);
+                } else {
+                  console.warn("[A] Module.ccall is not ready yet!");
+                }
               }
             });
           })
@@ -145,6 +146,7 @@
 
       // 追加終わり
 
+      // BKUP 元コード
       // script.onload = () => {
       //   createUnityInstance(canvas, config, (progress) => {
       //     document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
@@ -158,6 +160,8 @@
       //           alert(message);
       //         });
       //       };
+
+      // BKUP 元コード終わり
 
       document.body.appendChild(script);
     </script>
